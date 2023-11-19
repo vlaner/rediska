@@ -20,7 +20,6 @@ type Reader struct {
 }
 
 func NewReader(r io.Reader) *Reader {
-
 	rd := bufio.NewReader(r)
 	return &Reader{
 		reader: textproto.NewReader(rd),
@@ -36,6 +35,7 @@ func (r *Reader) ParseInput() (Value, error) {
 	if err != nil {
 		return Value{}, err
 	}
+
 	switch typ {
 	case BULK_STRING:
 		return r.parseBulkString()
@@ -53,6 +53,7 @@ func (r *Reader) getLength() (int, error) {
 	if err != nil {
 		return 0, err
 	}
+
 	n, err := strconv.Atoi(string(line))
 	if err != nil {
 		return 0, err
@@ -67,6 +68,7 @@ func (r *Reader) parseBulkString() (Value, error) {
 	if err != nil {
 		return v, err
 	}
+
 	if strLen < 0 {
 		return v, ErrInvalidBulkStringSize
 	}
@@ -88,9 +90,11 @@ func (r *Reader) parseArray() (Value, error) {
 	if err != nil {
 		return v, err
 	}
+
 	if arrayLen < 0 {
 		return v, ErrInvalidArraySize
 	}
+
 	for i := 0; i < arrayLen; i++ {
 		elem, err := r.ParseInput()
 		if err != nil {
@@ -109,10 +113,12 @@ func (r *Reader) readInteger() (Value, error) {
 	if err != nil {
 		return v, err
 	}
+
 	n, err := strconv.Atoi(string(line))
 	if err != nil {
 		return v, err
 	}
 	v.Num = n
+
 	return v, nil
 }

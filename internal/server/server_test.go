@@ -29,11 +29,13 @@ func TestPing(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Write to server failed: %s", err.Error())
 	}
+
 	reply := make([]byte, 1024)
 	n, err := conn.Read(reply)
 	if err != nil {
 		t.Fatalf("Write to server failed: %s", err.Error())
 	}
+
 	expected := []byte("+TEST\r\n")
 	if !bytes.Equal(reply[:n], expected) {
 		t.Errorf("expected %v, got %v", expected, reply[:n])
@@ -46,16 +48,19 @@ func TestGetNil(t *testing.T) {
 		t.Fatalf("Dial failed: %s", err.Error())
 	}
 	defer conn.Close()
+
 	input := []byte("*2\r\n$3\r\nget\r\n$3\r\nkey\r\n")
 	_, err = conn.Write(input)
 	if err != nil {
 		t.Fatalf("Write to server failed: %s", err.Error())
 	}
+
 	reply := make([]byte, 1024)
 	n, err := conn.Read(reply)
 	if err != nil {
 		t.Fatalf("Write to server failed: %s", err.Error())
 	}
+
 	expected := []byte("$-1\r\n")
 	if !bytes.Equal(reply[:n], expected) {
 		t.Errorf("expected %v, got %v", expected, reply[:n])
@@ -75,6 +80,7 @@ func TestSetAndGet(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Write to server failed: %s", err.Error())
 	}
+
 	replySet := make([]byte, 1024)
 	n, err := conn.Read(replySet)
 	if err != nil {
@@ -91,6 +97,7 @@ func TestSetAndGet(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Write to server failed: %s", err.Error())
 	}
+
 	replyGet := make([]byte, 1024)
 	n, err = conn.Read(replyGet)
 	if err != nil {
@@ -134,6 +141,7 @@ func TestSetTTL(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Write to server failed: %s", err.Error())
 	}
+
 	replyGet := make([]byte, 1024)
 	n, err = conn.Read(replyGet)
 	if err != nil {

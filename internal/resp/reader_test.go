@@ -13,11 +13,14 @@ func TestProtocolParseSimpleBulkString(t *testing.T) {
 	input := []byte("$4\r\nTEST\r\n")
 	buf := new(bytes.Buffer)
 	buf.Write(input)
+
 	r := resp.NewReader(buf)
+
 	output, err := r.ParseInput()
 	if err != nil {
 		t.Fatalf("Expected no error got %v", err)
 	}
+
 	result := output.Marshal()
 	if !bytes.Equal(result, input) {
 		t.Errorf("EXPECTED OUTPUT TO BE '%v' BUT GOT %v", input, result)
@@ -46,6 +49,7 @@ func TestProtocolParseErrorNoPrefix(t *testing.T) {
 	input := []byte("4\r\nTEST\r\n")
 	buf := new(bytes.Buffer)
 	buf.Write(input)
+
 	r := resp.NewReader(buf)
 
 	_, err := r.ParseInput()
@@ -123,6 +127,7 @@ func TestProtocolParseEmptyInput(t *testing.T) {
 	var input []byte
 	buf := new(bytes.Buffer)
 	buf.Write(input)
+
 	r := resp.NewReader(buf)
 
 	_, err := r.ParseInput()
