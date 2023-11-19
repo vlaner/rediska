@@ -39,6 +39,8 @@ func (r *Reader) ParseInput() (Value, error) {
 	switch typ {
 	case BULK_STRING:
 		return r.parseBulkString()
+	case INTEGER:
+		return r.readInteger()
 	case ARRAY:
 		return r.parseArray()
 	default:
@@ -97,5 +99,20 @@ func (r *Reader) parseArray() (Value, error) {
 		v.Array = append(v.Array, elem)
 	}
 
+	return v, nil
+}
+
+func (r *Reader) readInteger() (Value, error) {
+	v := Value{Typ: "num"}
+
+	line, err := r.readLine()
+	if err != nil {
+		return v, err
+	}
+	n, err := strconv.Atoi(string(line))
+	if err != nil {
+		return v, err
+	}
+	v.Num = n
 	return v, nil
 }

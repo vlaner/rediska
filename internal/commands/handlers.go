@@ -2,6 +2,7 @@ package commands
 
 import (
 	"sync"
+	"time"
 
 	"github.com/vlaner/rediska/internal/resp"
 )
@@ -23,16 +24,35 @@ func ping(args []resp.Value) resp.Value {
 }
 
 func set(args []resp.Value) resp.Value {
-	if len(args) != 2 {
+	if len(args) < 2 {
 		return resp.Value{Typ: "error", Str: "invalid arguments"}
 	}
 
-	key, val := args[0], args[1]
+	if len(args) == 2 {
+		key, val := args[0], args[1]
+		mu.Lock()
+		defer mu.Unlock()
+
+		storage[key.Bulk] = val.Bulk
+		return resp.Value{Typ: "string", Str: "OK"}
+	}
+	// ttl in seconds
+	key, val, ttl := args[0], args[1], args[2]
 	mu.Lock()
 	defer mu.Unlock()
 
 	storage[key.Bulk] = val.Bulk
+
+	go deleteAfter(key.Bulk, time.Duration(ttl.Num))
+
 	return resp.Value{Typ: "string", Str: "OK"}
+}
+
+func deleteAfter(key string, ttl time.Duration) {
+	<-time.After(ttl)
+	mu.Lock()
+	defer mu.Unlock()
+	delete(storage, key)
 }
 
 func get(args []resp.Value) resp.Value {

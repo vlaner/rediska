@@ -5,6 +5,7 @@ import (
 	"context"
 	"net"
 	"testing"
+	"time"
 
 	"github.com/vlaner/rediska/internal/server"
 )
@@ -40,7 +41,6 @@ func TestPing(t *testing.T) {
 }
 
 func TestGetNil(t *testing.T) {
-
 	conn, err := net.Dial("tcp", "localhost:3000")
 	if err != nil {
 		t.Fatalf("Dial failed: %s", err.Error())
@@ -98,6 +98,49 @@ func TestSetAndGet(t *testing.T) {
 	}
 
 	expectedGet := []byte("$5\r\nvalue\r\n")
+	if !bytes.Equal(replyGet[:n], expectedGet) {
+		t.Errorf("expected %v, got %v", expectedGet, replyGet[:n])
+	}
+}
+
+func TestSetTTL(t *testing.T) {
+	conn, err := net.Dial("tcp", "localhost:3000")
+	if err != nil {
+		t.Fatalf("Dial failed: %s", err.Error())
+	}
+	defer conn.Close()
+
+	input := []byte("*4\r\n$3\r\nset\r\n$3\r\nkey\r\n$5\r\nvalue\r\n:1\r\n")
+	_, err = conn.Write(input)
+	if err != nil {
+		t.Fatalf("Write to server failed: %s", err.Error())
+	}
+
+	reply := make([]byte, 1024)
+	n, err := conn.Read(reply)
+	if err != nil {
+		t.Fatalf("Write to server failed: %s", err.Error())
+	}
+
+	expected := []byte("+OK\r\n")
+	if !bytes.Equal(reply[:n], expected) {
+		t.Errorf("expected %v, got %v", string(expected), string(reply[:n]))
+	}
+
+	// TODO: make fast?
+	time.Sleep(2 * time.Second)
+	get := []byte("*2\r\n$3\r\nget\r\n$3\r\nkey\r\n")
+	_, err = conn.Write(get)
+	if err != nil {
+		t.Fatalf("Write to server failed: %s", err.Error())
+	}
+	replyGet := make([]byte, 1024)
+	n, err = conn.Read(replyGet)
+	if err != nil {
+		t.Fatalf("Write to server failed: %s", err.Error())
+	}
+
+	expectedGet := []byte("$-1\r\n")
 	if !bytes.Equal(replyGet[:n], expectedGet) {
 		t.Errorf("expected %v, got %v", expectedGet, replyGet[:n])
 	}
